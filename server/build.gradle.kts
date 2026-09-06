@@ -40,5 +40,5 @@ dependencies {
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
     // 2.4.240 has an open-session CHECK regression: h2database/h2database#4291.
-    testImplementation("com.h2database:h2:2.3.232")
+    testImplementation("com.h2database:h2:2.4.240")
 }
