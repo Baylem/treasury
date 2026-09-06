@@ -32,7 +32,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:1.5.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:1.5.0")
     implementation("org.postgresql:postgresql:42.7.8")
-    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("com.zaxxer:HikariCP:7.1.0")
     implementation("org.flywaydb:flyway-core:11.15.0")
     implementation("org.flywaydb:flyway-database-postgresql:11.15.0")
     implementation("de.mkammerer:argon2-jvm:2.12")
