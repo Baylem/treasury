@@ -1,0 +1,62 @@
+name: treasury
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: treasury_admin
+      POSTGRES_DB: treasury
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set a unique administrator password}
+      TREASURY_APP_PASSWORD: ${DATABASE_PASSWORD:?Set a unique application database password}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./init-db.sh:/docker-entrypoint-initdb.d/10-treasury.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U treasury_admin -d treasury"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    shm_size: 128mb
+
+  api:
+    build:
+      context: ../..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/treasury
+      DATABASE_USER: treasury
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Set a unique application database password}
+      PUBLIC_URL: ${PUBLIC_URL:?Set the public HTTPS origin}
+      TREASURY_ENV: ${TREASURY_ENV:-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      TRUSTED_PROXY_ADDRESSES: ${TRUSTED_PROXY_ADDRESSES:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_TLS: ${SMTP_TLS:-starttls}
+    ports:
+      - "127.0.0.1:${PORT:-8080}:8080"
+    read_only: true
+    tmpfs:
+      # JNA extracts the Argon2 library here and must map executable pages.
+      - /tmp:rw,nosuid,nodev,exec,size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    stop_grace_period: 30s
+
+volumes:
+  postgres_data:

@@ -1,0 +1,15 @@
+{
+  "name": "treasury-build-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "icons": "node generate-icons.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "sharp": "0.35.3"
+  }
+}

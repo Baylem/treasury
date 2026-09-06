@@ -1,0 +1,29 @@
+CREATE TABLE stored_entity (
+    owner_id TEXT NOT NULL,
+    id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('ACCOUNT', 'ENTRY', 'PLAN', 'OVERRIDE')),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    revision INTEGER NOT NULL CHECK (revision > 0),
+    payload TEXT NOT NULL,
+    PRIMARY KEY (owner_id, id)
+);
+
+CREATE INDEX stored_entity_owner_updated ON stored_entity(owner_id, updated_at, id);
+
+selectOwner:
+SELECT * FROM stored_entity WHERE owner_id = ? ORDER BY id;
+
+insertIfAbsent:
+INSERT OR IGNORE INTO stored_entity(owner_id, id, kind, created_at, updated_at, deleted_at, revision, payload)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateEntity:
+UPDATE stored_entity
+SET kind = ?, created_at = ?, updated_at = ?, deleted_at = ?, revision = ?, payload = ?
+WHERE owner_id = ? AND id = ?;
+
+-- GDPR/local erasure only; normal deletion updates deleted_at and preserves the row.
+purgeOwner:
+DELETE FROM stored_entity WHERE owner_id = ?;

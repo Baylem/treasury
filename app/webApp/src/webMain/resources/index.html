@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treasury</title>
-    <link type="text/css" rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#174A3C">
+    <meta name="description" content="Treasury is your personal finance calendar. Plan income, bills, subscriptions, and payments with manual entry and a clearer view of your balance.">
+    <title>Treasury — Your money, in perspective</title>
+    <link rel="icon" href="treasury.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body style="text-align: center; align-content: center">
-<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 50 50" role="presentation">
-    <circle cx="25" cy="25" r="20" stroke="#ccc" stroke-width="4" fill="none"/>
-    <circle cx="25" cy="25" r="20" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"
-            stroke-dasharray="90 125">
-        <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s"
-                          repeatCount="indefinite"/>
-    </circle>
-</svg>
-<script type="application/javascript" src="webApp.js"></script>
+<body>
+    <main id="treasury-loading" class="launch" aria-labelledby="launch-title">
+        <img src="treasury.svg" alt="" width="76" height="76">
+        <h1 id="launch-title">treasury.</h1>
+        <p>Your money, in perspective.</p>
+        <div class="loading-line" aria-hidden="true"></div>
+        <p id="launch-status" class="status" role="status">Opening your calendar…</p>
+        <button id="launch-reload" type="button" hidden>Reload Treasury</button>
+        <noscript><p>Enable JavaScript to open Treasury. Your stored records stay in this browser.</p></noscript>
+    </main>
+    <script src="bootstrap.js"></script>
+    <script src="webApp.js"></script>
 </body>
 </html>

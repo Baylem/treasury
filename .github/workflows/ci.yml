@@ -1,0 +1,139 @@
+name: Treasury CI
+
+'on':
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: treasury-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  jvm:
+    name: JVM tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Test shared engine, repository, client UI, and server (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a bash ./gradlew :shared:jvmTest :composeApp:jvmTest :server:test --continue --no-daemon --console=plain
+      - name: Test shared engine, repository, client UI, and server (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\gradlew.bat :shared:jvmTest :composeApp:jvmTest :server:test --continue --no-daemon --console=plain
+      - name: Preserve test reports and rendered UI
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-results-${{ matrix.os }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            shared/build/reports/tests/
+            composeApp/build/reports/tests/
+            server/build/reports/tests/
+            composeApp/build/qa/
+
+  postgres:
+    name: Real PostgreSQL integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: treasury_test
+          POSTGRES_USER: treasury_ci
+          POSTGRES_PASSWORD: isolated-ci-database
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U treasury_ci -d treasury_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TREASURY_TEST_DATABASE_URL: jdbc:postgresql://127.0.0.1:5432/treasury_test
+      TREASURY_TEST_DATABASE_USER: treasury_ci
+      TREASURY_TEST_DATABASE_PASSWORD: isolated-ci-database
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Test production migrations, JDBC storage, and HTTP routes
+        run: bash ./gradlew :server:test --no-daemon --console=plain
+      - name: Preserve integration reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-results-postgres
+          retention-days: 14
+          path: server/build/reports/tests/
+
+  web:
+    name: WebAssembly and JavaScript compilation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Compile both browser targets and portable tests
+        run: >-
+          bash ./gradlew :shared:compileKotlinWasmJs :shared:compileTestKotlinWasmJs
+          :composeApp:compileKotlinWasmJs :composeApp:compileKotlinJs
+          :app:webApp:compileKotlinWasmJs :app:webApp:compileKotlinJs
+          --no-daemon --console=plain
+
+  apple:
+    name: iOS engine tests and Compose frameworks
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Test the native shared engine
+        run: bash ./gradlew :shared:iosSimulatorArm64Test --no-daemon --console=plain
+      - name: Link simulator and device frameworks
+        run: >-
+          bash ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+          :composeApp:linkReleaseFrameworkIosArm64 --no-daemon --console=plain
+      - name: Preserve native test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-results-ios
+          retention-days: 14
+          if-no-files-found: warn
+          path: shared/build/reports/tests/

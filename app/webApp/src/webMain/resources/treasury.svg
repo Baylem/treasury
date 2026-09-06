@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" fill="none" role="img" aria-labelledby="treasury-icon-title">
+  <title id="treasury-icon-title">Treasury</title>
+  <rect width="108" height="108" rx="25" fill="#174A3C"/>
+  <path d="M35 32H73A7 7 0 0 1 80 39V74A7 7 0 0 1 73 81H35A7 7 0 0 1 28 74V39A7 7 0 0 1 35 32Z" stroke="#F5F7F3" stroke-width="5"/>
+  <path d="M40 26V37M68 26V37M29 46H79" stroke="#F5F7F3" stroke-width="5" stroke-linecap="round"/>
+  <path d="M39 69L49 59L58 65L70 55M61 55H70V64" stroke="#D4DFC8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,7 +1,14 @@
-html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
+:root { color-scheme: light; background: #f5f7f3; color: #174a3c; }
+html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
+body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.launch { box-sizing: border-box; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+.launch h1 { margin: 22px 0 6px; font: normal 44px Georgia, "Times New Roman", serif; letter-spacing: -1px; }
+.launch p { max-width: 360px; color: #67756d; line-height: 1.6; }
+.launch .status { font-size: 13px; }
+.loading-line { width: 112px; height: 3px; margin-top: 22px; border-radius: 4px; background: #dce3da; overflow: hidden; }
+.loading-line::after { content: ""; display: block; width: 45%; height: 100%; background: #174a3c; animation: loading 1.4s ease-in-out infinite alternate; }
+.launch button { border: 0; border-radius: 24px; padding: 12px 20px; background: #174a3c; color: white; font: inherit; cursor: pointer; }
+.launch button:focus-visible { outline: 3px solid #886a38; outline-offset: 4px; }
+.launch button[hidden] { display: none; }
+@keyframes loading { from { transform: translateX(-100%); } to { transform: translateX(240%); } }
+@media (prefers-reduced-motion: reduce) { .loading-line::after { animation: none; width: 100%; } }

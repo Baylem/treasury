@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":app:shared"))
+    implementation(project(":composeApp"))
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
@@ -21,8 +21,18 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "dev.baylem.treasury"
+            packageName = "Treasury"
             packageVersion = "1.0.0"
+            modules("java.sql", "java.naming", "jdk.crypto.ec", "jdk.unsupported")
+            windows {
+                iconFile.set(project.file("icons/treasury.ico"))
+                menuGroup = "Treasury"
+                upgradeUuid = "a37a4ac8-9c01-4eeb-9e15-b8835827e608"
+                shortcut = true
+                perUserInstall = true
+            }
+            macOS { iconFile.set(project.file("icons/treasury.icns")) }
+            linux { iconFile.set(project.file("icons/treasury.png")) }
         }
     }
 }
